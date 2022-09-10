@@ -1,3 +1,6 @@
+import re
+
+
 present_conj_data = [
     ['u', 'i', 'a', 'ame', 'ate'],
     ['iu', 'i', 'i', 'ime', 'ite'],
@@ -8,6 +11,8 @@ past_conj_data = [
     ['au', 'ai', 'o', 'ome', 'ote'],
     ['iau', 'ei', 'ė', 'ėme', 'ėte']
 ]
+
+reflexive_endings = ['i', 'i', 'i', '', '']
 
 future_conj_data = ['iu', 'i', '', 'ime', 'ite']
 
@@ -29,31 +34,53 @@ def get_shared_chars(str1, str2):
     return(str1[:max_char])
 
 
+def get_reflexive(conj, i):
+    if(conj.endswith('e')):
+        conj = conj[:-1] + 'ė'
+    return conj + 's' + reflexive_endings[i]
 
-def conjugate_present(third_pres):
+def conjugate_present(third_pres, reflexive=False):
     conj_present = {}
     #Get present tense conjugation for the verb
     for cj in present_conj_data:
         if(third_pres.endswith(cj[2])):
             stem = third_pres[:-1]
             for i, form in enumerate(cj):
+                conj = ''
                 if(stem.endswith('d') and i == 0):
-                    conj_present[meanings[i]] = stem[:-1] + 'dž' + form
+                    conj = stem[:-1] + 'dž' + form
                 else:
                     #If the final letter of the stem is already the letter for the conjugation, ignore it            
                     if(form != stem[-1]):
-                        conj_present[meanings[i]] = stem + form
+                        conj = stem + form
                     else:
-                        conj_present[meanings[i]] = stem
+                        conj = stem
+                if(reflexive):
+                    if(cj[2] == 'a'):
+                        if(i == 0):
+                            conj += 'osi'
+                        elif(i == 1):
+                            conj += 'esi'
+                        else:
+                            conj = get_reflexive(conj, i)
+                    else:
+                        conj = get_reflexive(conj, i)
+                conj_present[meanings[i]] = conj
     
     return(conj_present)
 
 
-def conjugate_imperative(stem):
+def conjugate_imperative(stem, reflexive=False):
     imperative_stem = stem
     if(stem.endswith('g') or stem.endswith('k')):
         imperative_stem = stem[:-1]
-    
+    if(reflexive):
+        return{
+        'second person singular': imperative_stem + 'ks',
+        'second person plural': imperative_stem + 'kitės',
+        'first person plural': imperative_stem + 'kimės'
+    }
+
     return{
         'second person singular': imperative_stem + 'k',
         'second person plural': imperative_stem + 'kite',
@@ -61,32 +88,39 @@ def conjugate_imperative(stem):
     }
 
 
-def conjugate_past(third_past):
+def conjugate_past(third_past, reflexive=False):
     #Get past tense conjugation for the verb
     conj_past = {}
     for cj in past_conj_data:        
         if(third_past.endswith(cj[2])):
             stem = third_past[:-1]
+            conj = ''
             for i, form in enumerate(cj):
                 #Palatalize verb if necessary                
                 if(i == 0 and cj[2] == 'ė' and (stem[-1] == 'd' or stem[-1] == 't')):
                     if(stem[-1] == 't'):
-                        conj_past[meanings[i]] = stem[:-1] + 'č' + form
+                        conj = stem[:-1] + 'č' + form
                     else:
-                        conj_past[meanings[i]] = stem[:-1] + 'dž' + form
+                        conj = stem[:-1] + 'dž' + form
                 else:
-                    conj_past[meanings[i]] = stem + form
+                    conj = stem + form
+                    if(reflexive):
+                        conj = get_reflexive(conj, i)
+                    conj_past[meanings[i]] = conj
         
     return(conj_past)
 
 
-def conjugate_past_iterative(stem):
+def conjugate_past_iterative(stem, reflexive=False):
     iterative_data = {}
     for i, cj in enumerate(past_conj_data[0]):
-        iterative_data[meanings[i]] = stem + 'dav' + cj
+        conj = stem + 'dav' + cj
+        if(reflexive):
+            conj = get_reflexive(conj, i)
+        iterative_data[meanings[i]] = conj
     return iterative_data
 
-def conjugate_future(stem, third_past, third_pres):
+def conjugate_future(stem, third_past, third_pres, reflexive=False):
     future_data = {}
     future_stem = stem
     if(not stem.endswith('s')):
@@ -97,18 +131,34 @@ def conjugate_future(stem, third_past, third_pres):
     for i, cj in enumerate(future_conj_data):
         if(i == 2):
             beginning = get_shared_chars(get_shared_chars(third_past, third_pres), stem)
-            future_data['third person'] = beginning + future_stem[len(beginning):]
+            conj = beginning + future_stem[len(beginning):]
+            if(reflexive):
+                conj += 'is'
+            future_data['third person'] = conj
         else:
-            future_data[meanings[i]] = future_stem + cj
+            conj = future_stem + cj
+            if(reflexive):
+                conj = get_reflexive(conj, i)
+            future_data[meanings[i]] = conj
     return(future_data)
 
-def conjugate_conditional(stem):
+def conjugate_conditional(stem, reflexive=False):
     conditional_data = {}
     for i, form in enumerate(conditional_conj_data):
-        conditional_data[meanings[i]] = stem + form
+        conj = stem + form
+        if(reflexive):
+            if(i == 1):
+                conj = stem + 'tumeisi'
+            else:
+                conj = get_reflexive(conj, i)
+        conditional_data[meanings[i]] = conj
+
     return(conditional_data)
 
 def conjugate(infinitive, third_pres='', third_past=''):
+    reflexive = infinitive.endswith('s')
+    if(reflexive):
+        infinitive = infinitive[:-1]
     if(not third_past or not third_pres):
         with open('data.txt', 'r', encoding='utf-8') as f:
             for verb in f.read().split('\n'):
@@ -117,14 +167,13 @@ def conjugate(infinitive, third_pres='', third_past=''):
                     third_pres = verb_info[1]
                     third_past = verb_info[2]
 
-    data = {}
-    stem = infinitive[:-2]
-    
-    data['present'] = conjugate_present(third_pres)    
-    data['imperative'] = conjugate_imperative(stem)    
-    data['past'] = conjugate_past(third_past)
-    data['past iterative'] = conjugate_past_iterative(stem)
-    data['future'] = conjugate_future(stem, third_past, third_pres)
-    data['conditional'] = conjugate_conditional(stem)
+    data = {}    
+    stem = infinitive[:-2]    
+    data['present'] = conjugate_present(third_pres, reflexive)    
+    data['imperative'] = conjugate_imperative(stem, reflexive)    
+    data['past'] = conjugate_past(third_past, reflexive)
+    data['past iterative'] = conjugate_past_iterative(stem, reflexive)
+    data['future'] = conjugate_future(stem, third_past, third_pres, reflexive)
+    data['conditional'] = conjugate_conditional(stem, reflexive)
     
     return(data)
