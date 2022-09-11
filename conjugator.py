@@ -1,4 +1,4 @@
-import re
+from utils import add_prefix
 
 
 present_conj_data = [
@@ -20,6 +20,12 @@ conditional_conj_data = ['čiau', 'tum(ei)', 'tų', 'tu(mė)me', 'tu(mė)te']
 
 meanings = ['first person singular', 'second person singular', 'third person', 'first person plural', 'second person plural']
 
+with open('data.txt', 'r', encoding='utf-8') as f:
+    verbs = f.read().split('\n')
+    verbs = [i.split(',')[0] for i in verbs]
+
+with open('verb_prefixes.txt', 'r', encoding='utf-8') as f:
+    PREFIXES = f.read().split('\n')
 
 def get_shared_chars(str1, str2):
     max_char = 0
@@ -38,6 +44,25 @@ def get_reflexive(conj, i):
     if(conj.endswith('e')):
         conj = conj[:-1] + 'ė'
     return conj + 's' + reflexive_endings[i]
+
+def main_prefix_removal(verb):
+    for i in PREFIXES:
+        if(verb.startswith(i)):
+            if(verb[len(i):] in verbs):
+                return(verb[len(i):])
+            else:
+                verb_found = main_prefix_removal(verb[len(i):])
+                if(verb_found):
+                    return(verb_found)
+
+
+def remove_prefixes(verb):
+    if(verb.startswith('ne')):
+        verb = verb[2:]
+    if(verb.startswith('be')):
+        verb = verb[2:]
+    return main_prefix_removal(verb)
+
 
 def conjugate_present(third_pres, reflexive=False):
     conj_present = {}
@@ -159,6 +184,11 @@ def conjugate(infinitive, third_pres='', third_past=''):
     reflexive = infinitive.endswith('s')
     if(reflexive):
         infinitive = infinitive[:-1]
+    prefix = ''
+    if(infinitive not in verbs):
+        root_verb = remove_prefixes(infinitive)
+        prefix = infinitive.split(root_verb)[0]
+        infinitive = root_verb
     if(not third_past or not third_pres):
         with open('data.txt', 'r', encoding='utf-8') as f:
             for verb in f.read().split('\n'):
@@ -175,5 +205,8 @@ def conjugate(infinitive, third_pres='', third_past=''):
     data['past iterative'] = conjugate_past_iterative(stem, reflexive)
     data['future'] = conjugate_future(stem, third_past, third_pres, reflexive)
     data['conditional'] = conjugate_conditional(stem, reflexive)
-    
+
+    if(data):
+        add_prefix(data, prefix)
+
     return(data)

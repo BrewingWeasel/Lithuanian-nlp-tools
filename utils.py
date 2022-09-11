@@ -29,3 +29,11 @@ def remove_accents(text):
     for i, o in replace_dict.items():
         new_text = new_text.replace(i, o)
     return new_text
+
+
+def add_prefix(d, prefix):
+    for k, v in d.items():
+        if(isinstance(v, dict)):
+            add_prefix(v, prefix)
+        else:
+            d[k] = prefix + v
