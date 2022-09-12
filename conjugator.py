@@ -61,6 +61,8 @@ def remove_prefixes(verb):
         verb = verb[2:]
     if(verb.startswith('be')):
         verb = verb[2:]
+    if(verb in verbs):
+        return(verb)
     return main_prefix_removal(verb)
 
 

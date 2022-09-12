@@ -6,9 +6,10 @@ verb data from verbalyser by ror-expert (https://github.com/ror-expert/verbalyse
 
 Future plans:
 - ~~support reflexive verbs~~
-- support lemmatization of verbs with prefixes
+- ~~support lemmatization of verbs with prefixes~~
 - support nouns and adjectives
 - support prepositions
+- support detection of word type
 - add more features :)
 
 
