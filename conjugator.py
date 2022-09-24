@@ -20,11 +20,11 @@ conditional_conj_data = ['čiau', 'tum(ei)', 'tų', 'tu(mė)me', 'tu(mė)te']
 
 meanings = ['first person singular', 'second person singular', 'third person', 'first person plural', 'second person plural']
 
-with open('data.txt', 'r', encoding='utf-8') as f:
+with open('data\\data.txt', 'r', encoding='utf-8') as f:
     verbs = f.read().split('\n')
     verbs = [i.split(',')[0] for i in verbs]
 
-with open('verb_prefixes.txt', 'r', encoding='utf-8') as f:
+with open('data\\verb_prefixes.txt', 'r', encoding='utf-8') as f:
     PREFIXES = f.read().split('\n')
 
 def get_shared_chars(str1, str2):
@@ -192,7 +192,7 @@ def conjugate(infinitive, third_pres='', third_past=''):
         prefix = infinitive.split(root_verb)[0]
         infinitive = root_verb
     if(not third_past or not third_pres):
-        with open('data.txt', 'r', encoding='utf-8') as f:
+        with open('data\\data.txt', 'r', encoding='utf-8') as f:
             for verb in f.read().split('\n'):
                 verb_info = verb.split(', ')
                 if(verb_info[0] == infinitive):

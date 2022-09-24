@@ -1,12 +1,12 @@
 from conjugator import conjugate
 
-with open('verb_prefixes.txt', 'r', encoding='utf-8') as f:
+with open('data\\verb_prefixes.txt', 'r', encoding='utf-8') as f:
     PREFIXES = f.read().split('\n') + ['ne', 'be']
 
-with open('allconjs.txt', 'r', encoding='utf-8') as f:
+with open('data\\allconjs.txt', 'r', encoding='utf-8') as f:
     CONJS = f.read().split('\n')
 
-with open('data.txt', 'r', encoding='utf-8') as f:
+with open('data\\data.txt', 'r', encoding='utf-8') as f:
     VERBS = f.read().split('\n')
 
 def find_shared_root(word, verb):
