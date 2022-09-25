@@ -1,5 +1,7 @@
 naudotojas, naudotojuje
-kelias, kely
+svečias, svety
+kelias, keliau
 velnias, velniau
+elnis, elniau
 vagis, vagiui, vagių
 akis, akiai, akių
