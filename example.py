@@ -5,7 +5,6 @@ from decliner import decline_adjective
 # print(conjugate('nebesužiūrėti'))
 
 
-# print(get_lemma('negaliu'))
-# print(get_morph('nepasikalbėčiau'))
+print(get_lemma('noriu'))
 
 print(decline_adjective('baltas'))

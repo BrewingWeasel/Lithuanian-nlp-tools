@@ -54,11 +54,13 @@ def get_info(word):
             prefix = get_prefix(word, unlemmatized)
             if(prefix != ''):
                 word = word.strip(prefix)
-                return [prefix + lemma, conjugate(prefix + lemma)]
+            return [prefix + lemma, conjugate(prefix + lemma)]
 
 
 def get_lemma(word):
     return get_info(word)[0]
 
-def get_morph(word):
-    return get_info(word)[1]
+
+# TODO: Fix get morph
+# def get_morph(word):
+#     return get_info(word)[1]

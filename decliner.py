@@ -386,6 +386,3 @@ def decline_adjective(adjective):
                         else:
                             declension[GRAM_GENDERS[gender]][NUMBERS[number]][CASE_NAMES[case_index]] = adjective_stem + case
             return declension
-
-
-print(decline_adjective('varinis'))
