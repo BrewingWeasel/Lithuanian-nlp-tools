@@ -1,25 +1,28 @@
-with open('data\\pronoun_declension.txt', 'r', encoding='utf-8') as f:
-    CONJS = [i.split('\t') for i in f.read().split('\n')]
+def read_from_file(file):
+    with open(f'data\\{file}.txt', 'r', encoding='utf-8') as f:
+        return f.read().split('\n')
+
+NOUNS = read_from_file('nouns')
+PROPER_NOUNS = read_from_file('propernouns')
+
+#Which declension the noun ending in 'is' is part of (first or third)
+FIRST_IS_DECLENSIONS = read_from_file('first_is_declensions')
+THIRD_IS_DECLENSIONS = read_from_file('third_is_declensions')
+
+PRN_DECLENSIONS = [i.split('\t') for i in read_from_file('pronoun_declension')]
 
 with open('data\\noun_data.txt', 'r', encoding='utf-8') as f:
     NOUN_DECLENSIONS = [i.split(', ') for i in f.read().split('\n')]
     CUSTOM_DECLENSIONS = {i[0]: i for i in NOUN_DECLENSIONS}
 
-with open('data\\nouns.txt', 'r', encoding='utf-8') as f:
-    NOUNS = f.read().split('\n')
-
-with open('data\\propernouns.txt', 'r', encoding='utf-8') as f:
-    PROPER_NOUNS = f.read().split('\n')
-
-with open('data\\first_is_declensions.txt', 'r', encoding='utf-8') as f:
-    FIRST_IS_DECLENSIONS = f.read().split('\n')
-
-with open('data\\third_is_declensions.txt', 'r', encoding='utf-8') as f:
-    THIRD_IS_DECLENSIONS = f.read().split('\n')
-
 CASE_NAMES = ['Nominative', 'Genitive', 'Dative', 'Accusative', 'Instrumental', 'Locative', 'Vocative']
+GRAM_GENDERS = ['masculine', 'feminine']
 CASE_NAMES_PRN = ['Nominative', 'Genitive', 'Dative', 'Accusative', 'Instrumental', 'Locative']
 NUMBERS = ['Singular', 'Plural']
+
+ADJ_THIRD_DECLEN_TYPES_DATA = [i.split(', ') for i in read_from_file('adjective_declension_data')]
+ADJ_THIRD_DECLEN_TYPES = {i[0]: i[1] for i in ADJ_THIRD_DECLEN_TYPES_DATA}
+
 
 ENDINGS = ['as', 'is', 'ys', 'ias', 'a', 'ė', 'is', 'us', 'ius', 'uo']
 DATA = [
@@ -64,6 +67,53 @@ DATA = [
             ['enys', 'enų', 'enims', 'enis', 'enimis', 'enyse', 'enys']
         ],
     ]
+
+
+DATA_ADJS = {
+    'ias': [
+        [
+            ['ias', 'io', 'iam', 'ią', 'iu', 'iame'],
+            ['i', 'ių', 'iems', 'ius', 'iais', 'iuose']
+        ],
+        [
+            ['ia', 'ios', 'iai', 'ią', 'ia', 'ioje'],
+            ['ios', 'ių', 'ioms', 'ias', 'iomis', 'iose']
+        ]
+    ],
+    'as': [
+        [
+            ['as', 'o', 'am', 'ą', 'u', 'ame'],
+            ['i', 'ų', 'iems', 'us', 'ais', 'uose']
+        ],
+        [
+            ['a', 'os', 'ai', 'ą', 'a', 'oje'],
+            ['os', 'ų', 'oms', 'as', 'omis', 'ose']
+        ]
+    ],
+    'us': [
+        [
+            ['us', 'aus', 'iam', 'ų', 'iu', 'iame'],
+            ['ūs', 'ių', 'iems', 'ius', 'iais', 'iuose']
+        ],
+        [
+            ['i', 'ios', 'iai', 'ią', 'ia', 'ioje'],
+            ['ios', 'ių', 'ioms', 'ias', 'iomis', 'iose']
+        ]
+    ],
+    'is': [
+        [
+            ['is', 'io', 'iam', 'į', 'iu', 'iame'],
+            [['iai', 'i'], 'ios', ['iams', 'iems'], 'ius', 'iais', 'iuose']
+        ],
+        [
+            ['ė', 'ės', 'ei', 'ę', 'e', 'ėje'],
+            ['ės', 'ių', 'ėms', 'es', 'ėmis', 'ėse']
+        ]
+    ]
+
+}
+
+
 
 IRREGULAR_NOUNS = {
     'duktė': {
@@ -271,18 +321,23 @@ IRREGULAR_NOUNS = {
 
 
 def decline_pronoun(pronoun):
-    for cur_conj in CONJS:
-        cur_conj = [i.strip() for i in cur_conj]
-        if(pronoun in cur_conj):
-            return dict(zip(CASE_NAMES_PRN, cur_conj))
+    for cur_decl in PRN_DECLENSIONS:
+        cur_decl = [i.strip() for i in cur_decl]
+        if(pronoun in cur_decl):
+            return dict(zip(CASE_NAMES_PRN, cur_decl))
 
 
 def decline_noun(noun):
+    """Gets the declension for a noun
+    Parameters:
+        noun (string): the noun to decline
+    Returns:
+        declension (dict): the declension of the noun"""
     declension = {}
     if(noun in IRREGULAR_NOUNS):
         return IRREGULAR_NOUNS[noun]
+    
     for i, ending in enumerate(ENDINGS):
-        print(i, ending)
         if(noun.endswith(ending)):
             if(not ending == 'is' or ((i == 1 and noun in FIRST_IS_DECLENSIONS) or (i == 6 and noun in THIRD_IS_DECLENSIONS))):
                 noun_stem = noun.rstrip(ending)
@@ -303,8 +358,7 @@ def decline_noun(noun):
                                         declension['Singular']['Vocative'] = noun_stem + 'e'
                                 if(noun in PROPER_NOUNS):
                                     declension['Singular']['Vocative'] = noun_stem + 'ai'
-                            else:
-                                print(num_unconfident)                        
+                            else:            
                                 declension[NUMBERS[num_index]][cur_case] = CUSTOM_DECLENSIONS[noun][num_unconfident]
                             num_unconfident += 1
                         else:
@@ -314,4 +368,24 @@ def decline_noun(noun):
                             if(noun_stem.endswith('d') and case.startswith('i')):
                                 declined_noun = noun_stem[:-1] + 'dž' + case
                             declension[NUMBERS[num_index]][cur_case] = declined_noun
-    return(declension)
+    return declension
+
+
+def decline_adjective(adjective):
+    for ending in DATA_ADJS.keys():
+        if(adjective.endswith(ending)):
+            declension = {}
+            adjective_stem = adjective[:-len(ending)]
+            for gender, next_declensions in enumerate(DATA_ADJS[ending]):
+                declension[GRAM_GENDERS[gender]] = {}
+                for number, final_declension in enumerate(next_declensions):
+                    declension[GRAM_GENDERS[gender]][NUMBERS[number]] = {}
+                    for case_index, case in enumerate(final_declension):
+                        if(isinstance(case, list)):
+                            declension[GRAM_GENDERS[gender]][NUMBERS[number]][CASE_NAMES[case_index]] = adjective_stem + case[int(ADJ_THIRD_DECLEN_TYPES[adjective])]
+                        else:
+                            declension[GRAM_GENDERS[gender]][NUMBERS[number]][CASE_NAMES[case_index]] = adjective_stem + case
+            return declension
+
+
+print(decline_adjective('varinis'))

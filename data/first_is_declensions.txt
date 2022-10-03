@@ -574,7 +574,6 @@ biznis
 jaunikis
 porteris
 puikis
-obelis
 klajoklis
 gilis
 sandėlis

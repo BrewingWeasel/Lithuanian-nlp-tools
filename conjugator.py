@@ -21,8 +21,8 @@ conditional_conj_data = ['čiau', 'tum(ei)', 'tų', 'tu(mė)me', 'tu(mė)te']
 meanings = ['first person singular', 'second person singular', 'third person', 'first person plural', 'second person plural']
 
 with open('data\\data.txt', 'r', encoding='utf-8') as f:
-    verbs = f.read().split('\n')
-    verbs = [i.split(',')[0] for i in verbs]
+    VERB_DATA = f.read().split('\n')
+    VERBS = [i.split(',')[0] for i in VERB_DATA]
 
 with open('data\\verb_prefixes.txt', 'r', encoding='utf-8') as f:
     PREFIXES = f.read().split('\n')
@@ -48,12 +48,12 @@ def get_reflexive(conj, i):
 def main_prefix_removal(verb):
     for i in PREFIXES:
         if(verb.startswith(i)):
-            if(verb[len(i):] in verbs):
+            if(verb[len(i):] in VERBS):
                 return(verb[len(i):])
             else:
                 verb_found = main_prefix_removal(verb[len(i):])
                 if(verb_found):
-                    return(verb_found)
+                    return verb_found
 
 
 def remove_prefixes(verb):
@@ -61,8 +61,8 @@ def remove_prefixes(verb):
         verb = verb[2:]
     if(verb.startswith('be')):
         verb = verb[2:]
-    if(verb in verbs):
-        return(verb)
+    if(verb in VERBS):
+        return verb
     return main_prefix_removal(verb)
 
 
@@ -94,7 +94,7 @@ def conjugate_present(third_pres, reflexive=False):
                         conj = get_reflexive(conj, i)
                 conj_present[meanings[i]] = conj
     
-    return(conj_present)
+    return conj_present
 
 
 def conjugate_imperative(stem, reflexive=False):
@@ -102,13 +102,13 @@ def conjugate_imperative(stem, reflexive=False):
     if(stem.endswith('g') or stem.endswith('k')):
         imperative_stem = stem[:-1]
     if(reflexive):
-        return{
+        return {
         'second person singular': imperative_stem + 'ks',
         'second person plural': imperative_stem + 'kitės',
         'first person plural': imperative_stem + 'kimės'
     }
 
-    return{
+    return {
         'second person singular': imperative_stem + 'k',
         'second person plural': imperative_stem + 'kite',
         'first person plural': imperative_stem + 'kime'
@@ -135,7 +135,7 @@ def conjugate_past(third_past, reflexive=False):
                         conj = get_reflexive(conj, i)
                     conj_past[meanings[i]] = conj
         
-    return(conj_past)
+    return conj_past
 
 
 def conjugate_past_iterative(stem, reflexive=False):
@@ -182,22 +182,33 @@ def conjugate_conditional(stem, reflexive=False):
 
     return(conditional_data)
 
+
 def conjugate(infinitive, third_pres='', third_past=''):
+    """Conjugates a verb
+    Parameters:
+        infinitive (string): The infinitive form of the verb (ex kalbėti)
+        third_pres (string): The third person present form of the verb (ex: kalba) (defaults to checking from file)
+        third_past (string): The third person past form of the verb (ex: kalbėjo) (defaults to checking from file)
+    Returns:
+        conjugations (dict): All of the conjugations of a verb
+    """
+
     reflexive = infinitive.endswith('s')
     if(reflexive):
         infinitive = infinitive[:-1]
     prefix = ''
-    if(infinitive not in verbs):
-        root_verb = remove_prefixes(infinitive)
+    if(infinitive not in VERBS):
+        root_verb = remove_prefixes(infinitive) #removes prefixes from verb (apžiūrėti -> ziūrėti)
         prefix = infinitive.split(root_verb)[0]
         infinitive = root_verb
+    
+    #If the either of the third person forms haven't been included, attempt to find them in the file
     if(not third_past or not third_pres):
-        with open('data\\data.txt', 'r', encoding='utf-8') as f:
-            for verb in f.read().split('\n'):
-                verb_info = verb.split(', ')
-                if(verb_info[0] == infinitive):
-                    third_pres = verb_info[1]
-                    third_past = verb_info[2]
+        for verb in VERB_DATA:
+            verb_info = verb.split(', ')
+            if(verb_info[0] == infinitive):
+                third_pres = verb_info[1]
+                third_past = verb_info[2]
 
     data = {}    
     stem = infinitive[:-2]    
@@ -211,4 +222,4 @@ def conjugate(infinitive, third_pres='', third_past=''):
     if(data):
         add_prefix(data, prefix)
 
-    return(data)
+    return data 

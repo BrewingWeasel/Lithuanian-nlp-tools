@@ -1,0 +1,3 @@
+laukinis, 0
+didelis, 1
+varinis, 1
